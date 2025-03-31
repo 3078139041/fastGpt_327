@@ -45,9 +45,9 @@ const ChatHeader = ({
       alignItems={'center'}
       px={[3, 5]}
       minH={['46px', '60px']}
-      borderBottom={'sm'}
       color={'myGray.900'}
       fontSize={'sm'}
+      background={'white'} // 添加背景颜色
     >
       {isPc ? (
         <>
@@ -268,9 +268,15 @@ export const PcHeader = ({
       </Box>
       <MyTag>
         <MyIcon name={'history'} w={'14px'} />
-        <Box ml={1}>
+        {/* <Box ml={1}>
           {totalRecordsCount === 0
             ? t('common:core.chat.New Chat')
+            : t('common:core.chat.History Amount', { amount: totalRecordsCount })}
+        </Box> */}
+
+        <Box ml={1}>
+          {totalRecordsCount === 0
+            ? t('common:core.chat.History Amount', { amount: 0 })
             : t('common:core.chat.History Amount', { amount: totalRecordsCount })}
         </Box>
       </MyTag>

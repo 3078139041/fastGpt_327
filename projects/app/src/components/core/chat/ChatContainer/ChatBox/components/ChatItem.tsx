@@ -123,14 +123,14 @@ const ChatItem = (props: Props) => {
           borderRadius: '8px 0 8px 8px',
           justifyContent: 'flex-end',
           textAlign: 'right',
-          bg: 'primary.100'
+          bg: '#f9f9f9'
         }
       : {
           order: 1,
           borderRadius: '0 8px 8px 8px',
           justifyContent: 'flex-start',
           textAlign: 'left',
-          bg: 'myGray.50'
+          bg: '#fffff'
         }),
     fontSize: 'mini',
     fontWeight: '400',
@@ -278,7 +278,8 @@ const ChatItem = (props: Props) => {
         >
           <Card
             {...MessageCardStyle}
-            bg={styleMap.bg}
+            // bg={styleMap.bg}
+            bg={type === ChatRoleEnum.Human ? '#f9f9f9' : '#ffffff'}
             borderRadius={styleMap.borderRadius}
             textAlign={'left'}
           >

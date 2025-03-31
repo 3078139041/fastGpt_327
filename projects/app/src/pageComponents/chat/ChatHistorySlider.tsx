@@ -88,7 +88,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
       flexDirection={'column'} //解释：flexDirection属性用于设置主轴方向，即水平方向。
       w={'100%'}
       h={'100%'}
-      bg={'#f6f6f6'}
+      bg={'#F7F8FC'}
       // borderRight={['', theme.borders.base]} //解释：仅在非手机端时显示边框
       whiteSpace={'nowrap'} //解释：禁止文本换行
     >
@@ -138,18 +138,18 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
         <Button
           variant={'whitePrimary'}
           flex={['0 0 auto', 1]}
-          bg={'#fff'}
+          bg={'#F0F4FF'}
           h={'100%'}
           px={6}
           borderRadius={'10px'}
-          color={'#000'}
+          color={'#3370FF'}
           // 设置hover 样式
           sx={{
             overflow: 'hidden',
+            border: '.5rpx solid #ccc', // 添加边框
             '&:hover': {
-              color: '#000', // 鼠标悬停时的颜色
-              backgroundColor: '#fff',
-              borderColor: '#ccc'
+              color: '#3370FF', // 鼠标悬停时的颜色
+              borderColor: '#CCE8FF'
             }
           }}
           //新对话图标
@@ -185,29 +185,31 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
               position={'relative'}
               key={item.id}
               alignItems={'center'}
-              //取消内边距
-              px={0}
-              h={'44px'}
+              px={4} // 增加内边距，提升间距感
+              py={2} // 上下内边距，使每一项更宽敞
+              h={'50px'} // 增加高度，避免内容过于紧凑
               cursor={'pointer'}
               userSelect={'none'}
-              borderRadius={'md'}
-              //历史对话记录字体大小
-              fontSize={'16px'}
+              borderRadius={'12px'} // 更大的圆角，增加现代感
+              fontSize={'14px'} // 字体大小保持一致
+              fontWeight={item.id === activeChatId ? 'semibold' : 'normal'} // 选中时加粗
+              transition={'all 0.3s ease-in-out'} // 平滑过渡动画
               _hover={{
-                bg: 'myGray.50',
+                bg: '#F5F7FA', // 悬停时浅灰色背景
                 '& .more': {
-                  display: 'block'
+                  display: 'block' // 悬停时显示更多操作按钮
                 },
                 '& .time': {
-                  display: isPc ? 'none' : 'block'
+                  display: isPc ? 'none' : 'block' // 根据设备显示时间戳
                 }
               }}
-              bg={item.top ? '#E6F6F6 !important' : ''}
+              bg={item.top ? '#E6F6F6' : 'transparent'} // 置顶时使用浅蓝色背景
               // 修改历史对话记录背景颜色和字体颜色
               {...(item.id === activeChatId
                 ? {
                     backgroundColor: '#f6f6f !important',
-                    color: '#000'
+                    color: '#3192FD',
+                    padding: '0px'
                   }
                 : {
                     onClick: () => {

@@ -33,7 +33,8 @@ import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 import { postQuestionGuide } from '@/web/core/ai/api';
 import type { ChatBoxInputType, ChatBoxInputFormType, SendPromptFnType } from './type.d';
 import type { StartChatFnProps, generatingMessageProps } from '../type';
-import ChatInput from './Input/ChatInput';
+
+import ChatInput from './Input/ChatInput1';
 import ChatBoxDivider from '../../Divider';
 import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
 import { getNanoid } from '@fastgpt/global/common/string/tools';
