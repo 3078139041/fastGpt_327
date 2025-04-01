@@ -88,7 +88,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
       flexDirection={'column'} //解释：flexDirection属性用于设置主轴方向，即水平方向。
       w={'100%'}
       h={'100%'}
-      bg={'#F7F8FC'}
+      bg={'#F9F9F9'}
       // borderRight={['', theme.borders.base]} //解释：仅在非手机端时显示边框
       whiteSpace={'nowrap'} //解释：禁止文本换行
     >
@@ -120,7 +120,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
       {/* menu */}
       <Flex
         w={'100%'}
-        px={[2, 5]}
+        px={[2, 2]}
         h={'36px'}
         my={5}
         justify={['space-between', '']}
@@ -138,36 +138,53 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
         <Button
           variant={'whitePrimary'}
           flex={['0 0 auto', 1]}
-          bg={'#F0F4FF'}
+          boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
           h={'100%'}
           px={6}
           borderRadius={'10px'}
-          color={'#3370FF'}
-          // 设置hover 样式
+          border={'none'}
+          color={'black'}
+          bg={'white'}
           sx={{
             overflow: 'hidden',
-            border: '.5rpx solid #ccc', // 添加边框
+            // border: '0.5px solid #ccc', // 使用0.5px实现超细边框
             '&:hover': {
-              color: '#3370FF', // 鼠标悬停时的颜色
-              borderColor: '#CCE8FF'
+              bg: 'rgba(0, 0, 0, 0.04)',
+              color: 'black',
+              borderColor: '#CCE8FF',
+              borderWidth: '0.5px' // 保持hover时同样细的边框
             }
           }}
-          //新对话图标
-          leftIcon={<MyIcon name={'core/chat/chatLight'} w={'16px'} />}
+          leftIcon={<MyIcon name={'core/chat/chatLight'} w={'16px'} color={'black'} />}
           onClick={() => onChangeChatId()}
         >
           {t('common:core.chat.New Chat')}
         </Button>
         {/* Clear */}
+        {/* 删除按钮 */}
         {isPc && histories.length > 0 && (
           <IconButton
-            ml={3}
+            ml={2}
+            bg={'white'}
+            border={'none'}
             h={'100%'}
             variant={'whiteDanger'}
             size={'mdSquare'}
+            boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
             aria-label={''}
-            borderRadius={'50%'}
-            icon={<MyIcon name={'common/clearLight'} w={'16px'} />}
+            // borderRadius={'90%'}
+            borderRadius={'10px'}
+            sx={{
+              overflow: 'hidden',
+              // border: '0.5px solid #ccc', // 使用0.5px实现超细边框
+              '&:hover': {
+                bg: 'rgba(0, 0, 0, 0.04)',
+                color: 'black',
+                borderColor: '#CCE8FF',
+                borderWidth: '0.5px' // 保持hover时同样细的边框
+              }
+            }}
+            icon={<MyIcon name={'common/clearLight'} w={'18px'} />}
             onClick={() =>
               openConfirm(() => {
                 onClearHistory();
@@ -177,7 +194,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
         )}
       </Flex>
 
-      <ScrollData flex={'1 0 0'} h={0} px={[2, 5]} overflow={'overlay'}>
+      <ScrollData flex={'1 0 0'} h={0} px={[2, 3]} overflow={'overlay'}>
         {/* chat history */}
         <>
           {concatHistory.map((item, i) => (
@@ -185,31 +202,26 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
               position={'relative'}
               key={item.id}
               alignItems={'center'}
-              px={4} // 增加内边距，提升间距感
-              py={2} // 上下内边距，使每一项更宽敞
-              h={'50px'} // 增加高度，避免内容过于紧凑
+              px={4}
+              h={'44px'}
               cursor={'pointer'}
               userSelect={'none'}
-              borderRadius={'12px'} // 更大的圆角，增加现代感
-              fontSize={'14px'} // 字体大小保持一致
-              fontWeight={item.id === activeChatId ? 'semibold' : 'normal'} // 选中时加粗
-              transition={'all 0.3s ease-in-out'} // 平滑过渡动画
+              borderRadius={'md'}
+              fontSize={'14px'}
               _hover={{
-                bg: '#F5F7FA', // 悬停时浅灰色背景
+                bg: 'rgba(0, 0, 0, 0.04)',
                 '& .more': {
-                  display: 'block' // 悬停时显示更多操作按钮
+                  display: 'block'
                 },
                 '& .time': {
-                  display: isPc ? 'none' : 'block' // 根据设备显示时间戳
+                  display: isPc ? 'none' : 'block'
                 }
               }}
-              bg={item.top ? '#E6F6F6' : 'transparent'} // 置顶时使用浅蓝色背景
-              // 修改历史对话记录背景颜色和字体颜色
+              bg={item.top ? 'rgba(0, 0, 0, 0.04) !important' : ''}
               {...(item.id === activeChatId
                 ? {
-                    backgroundColor: '#f6f6f !important',
-                    color: '#3192FD',
-                    padding: '0px'
+                    backgroundColor: 'rgba(0, 0, 0, 0.04) !important',
+                    color: '#000'
                   }
                 : {
                     onClick: () => {
@@ -220,12 +232,11 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
                 mb: '8px'
               })}
             >
-              {/* 历史对话记录图标 */}
               {/* <MyIcon
                 name={item.id === activeChatId ? 'core/chat/chatFill' : 'core/chat/chatLight'}
                 w={'16px'}
               /> */}
-              <Box flex={'1 0 0'} ml={1} className="textEllipsis">
+              <Box flex={'1 0 0'} ml={3} className="textEllipsis">
                 {item.customTitle || item.title}
               </Box>
               {!!item.id && (

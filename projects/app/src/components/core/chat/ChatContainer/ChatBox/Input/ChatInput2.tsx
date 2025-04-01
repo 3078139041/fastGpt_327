@@ -190,50 +190,29 @@ const ChatInput = ({
     () => (
       <Flex alignItems={'flex-end'} mt={fileList.length > 0 ? 1 : 0} pl={[2, 4]}>
         {/* file selector */}
-        {(showSelectFile || showSelectImg) && (
-          <Flex
-            h={'22px'}
-            alignItems={'center'}
-            justifyContent={'center'}
-            cursor={'pointer'}
-            transform={'translateY(1px)'}
-            onClick={() => {
-              if (isSpeaking) return;
-              onOpenSelectFile();
-            }}
-          >
-            <MyTooltip label={selectFileLabel}>
-              <MyIcon name={selectFileIcon as any} w={'18px'} color={'myGray.600'} />
-            </MyTooltip>
-            <File onSelect={(files) => onSelectFile({ files })} />
-          </Flex>
-        )}
 
         {/* input area */}
         <Textarea
           ref={TextareaDom}
           py={0}
           pl={2}
-          mb={10}
-          ml={-6}
-          bg={'#F9F9F9'}
+          pr={['30px', '48px']}
+          border={'none'}
           _focusVisible={{
             border: 'none'
           }}
           _focus={{
-            bg: '#F9F9F9', // 聚焦时背景色
+            bg: '#F5F5F5', // 聚焦时背景色
             border: 'none', // 移除默认聚焦边框
             boxShadow: 'none' // 移除聚焦阴影
           }}
           _hover={{
-            bg: '#F9F9F9' // 鼠标悬停时背景色
+            bg: '#F5F5F5' // 鼠标悬停时背景色
           }}
           _disabled={{
-            bg: '#F9F9F9', // 禁用时背景色
+            bg: '#F5F5F5', // 禁用时背景色
             opacity: 1 // 防止禁用时变灰
           }}
-          pr={['30px', '48px']}
-          border={'none'}
           placeholder={
             isSpeaking
               ? t('common:core.chat.Speaking')
@@ -243,9 +222,9 @@ const ChatInput = ({
           }
           resize={'none'}
           rows={1}
-          height={'22px'}
-          lineHeight={'22px'}
-          maxHeight={'40vh'}
+          height={'32px'}
+          lineHeight={'15px'}
+          maxHeight={'50vh'}
           maxLength={-1}
           overflowY={'auto'}
           whiteSpace={'pre-wrap'}
@@ -305,6 +284,7 @@ const ChatInput = ({
             }
           }}
         />
+
         <Flex alignItems={'center'} position={'absolute'} right={[2, 4]} bottom={['10px', '12px']}>
           {/* voice-input */}
           {whisperConfig?.open && !inputValue && !isChatting && (
@@ -325,18 +305,15 @@ const ChatInput = ({
                     alignItems={'center'}
                     justifyContent={'center'}
                     flexShrink={0}
-                    h={['26px', '32px']}
-                    w={['26px', '32px']}
-                    borderRadius={'md'}
+                    h={['32px']} // 宽高一致
+                    w={['32px']} // 宽高一致
+                    borderRadius={'50%'} // 圆形
                     cursor={'pointer'}
-                    _hover={{ bg: '#F5F5F8' }}
+                    bg={'#F5F5F8'} // 背景颜色
+                    _hover={{ bg: '#E5E5E5' }} // 鼠标悬停背景
                     onClick={() => stopSpeak(true)}
                   >
-                    <MyIcon
-                      name={'core/chat/cancelSpeak'}
-                      width={['20px', '22px']}
-                      height={['20px', '22px']}
-                    />
+                    <MyIcon name={'core/chat/cancelSpeak'} width={['20px']} height={['20px']} />
                   </Flex>
                 </MyTooltip>
               )}
@@ -350,17 +327,18 @@ const ChatInput = ({
                   alignItems={'center'}
                   justifyContent={'center'}
                   flexShrink={0}
-                  h={['26px', '32px']}
-                  w={['26px', '32px']}
-                  borderRadius={'md'}
+                  h={['32px']} // 宽高一致
+                  w={['32px']} // 宽高一致
+                  borderRadius={'50%'} // 圆形
                   cursor={'pointer'}
-                  _hover={{ bg: '#F5F5F8' }}
+                  bg={isSpeaking ? '#E5E5E5' : '#F5F5F8'} // 动态背景颜色
+                  _hover={{ bg: '#E5E5E5' }} // 鼠标悬停背景
                   onClick={onWhisperRecord}
                 >
                   <MyIcon
                     name={isSpeaking ? 'core/chat/finishSpeak' : 'core/chat/recordFill'}
-                    width={['20px', '22px']}
-                    height={['20px', '22px']}
+                    width={['20px']}
+                    height={['20px']}
                     color={isSpeaking ? 'primary.500' : 'myGray.600'}
                   />
                 </Flex>
@@ -377,10 +355,12 @@ const ChatInput = ({
               alignItems={'center'}
               justifyContent={'center'}
               flexShrink={0}
-              h={['28px', '32px']}
-              w={['28px', '32px']}
-              borderRadius={'50%'}
-              bg={isSpeaking || isChatting ? '' : !havInput || hasFileUploading ? '#000' : '#000'}
+              h={['32px']} // 宽高一致
+              w={['32px']} // 宽高一致
+              borderRadius={'50%'} // 圆形
+              bg={
+                isSpeaking || isChatting ? '' : !havInput || hasFileUploading ? '#E5E5E5' : '#000'
+              }
               cursor={havInput ? 'pointer' : 'not-allowed'}
               lineHeight={1}
               onClick={() => {
@@ -391,20 +371,20 @@ const ChatInput = ({
               }}
             >
               {isChatting ? (
+                // 发送框加载按钮
                 <MyIcon
-                  animation={'zoomStopIcon 0.4s infinite alternate'}
-                  width={['22px', '25px']}
-                  height={['22px', '25px']}
+                  width={['22px']}
+                  height={['22px']}
                   cursor={'pointer'}
                   name={'stop'}
-                  color={'gray.500'}
+                  color={'#000'}
                 />
               ) : (
                 <MyTooltip label={t('common:core.chat.Send Message')}>
                   <MyIcon
                     name={'core/chat/sendFill'}
-                    width={['18px', '20px']}
-                    height={['18px', '20px']}
+                    width={['20px']}
+                    height={['20px']}
                     color={'white'}
                   />
                 </MyTooltip>
@@ -412,6 +392,27 @@ const ChatInput = ({
             </Flex>
           )}
         </Flex>
+
+        {(showSelectFile || showSelectImg) && (
+          <Flex
+            position={'absolute'}
+            top={['55px']}
+            h={'22px'}
+            alignItems={'center'}
+            justifyContent={'center'}
+            cursor={'pointer'}
+            transform={'translateY(5px) translateX(6px)'}
+            onClick={() => {
+              if (isSpeaking) return;
+              onOpenSelectFile();
+            }}
+          >
+            <MyTooltip label={selectFileLabel}>
+              <MyIcon name={selectFileIcon as any} w={'18px'} color={'myGray.600'} />
+            </MyTooltip>
+            <File onSelect={(files) => onSelectFile({ files })} />
+          </Flex>
+        )}
       </Flex>
     ),
     [
@@ -444,9 +445,12 @@ const ChatInput = ({
 
   return (
     <Box
-      m={['0 auto', '20px auto']}
+      m={['0 auto', '10px auto']}
       w={'100%'}
-      maxW={['auto', 'min(90%, 100%)']}
+      // 输入框长度设置
+      maxW={['auto', 'min(93.5%, 100%)']}
+      // 设置底部外边距
+      p={[10, 10]}
       px={[0, 5]}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
@@ -477,14 +481,18 @@ const ChatInput = ({
         pt={fileList.length > 0 ? '0' : ['14px', '18px']}
         pb={['14px', '18px']}
         position={'relative'}
-        bg={'#F9F9F9'}
         // boxShadow={isSpeaking ? `0 0 10px rgba(54,111,255,0.4)` : `0 0 10px rgba(0,0,0,0.2)`}
-        borderRadius={['none', '16px']}
+        borderRadius={['none', '20px']}
+        // bg={'#000'}
+        // 输入框高度设置
+        h={'105px'}
         overflow={'display'}
         {...(isPc
           ? {
-              border: '1px solid',
-              borderColor: 'rgba(0,0,0,0.12)'
+              // border: '1px solid',
+              // borderColor: 'rgba(0,0,0,0.12)'
+              // borderColor: 'F7F8FC'
+              backgroundColor: '#F5F5F5'
             }
           : {
               borderTop: '1px solid',

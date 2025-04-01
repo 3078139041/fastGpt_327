@@ -50,6 +50,8 @@ const ToolMenu = ({ history }: { history: ChatItemType[] }) => {
           icon={<MyIcon name="more" w="14px" p={2} />}
           aria-label=""
           size="sm"
+          boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
+          border={'none'}
           variant="whitePrimary"
         />
       }
