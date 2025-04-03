@@ -327,7 +327,7 @@ const ChatInput = ({
             )}
 
             {/* Add search button */}
-            <MyTooltip label="联网搜索">
+            <MyTooltip label="深度思考">
               <Flex
                 p={'5px'}
                 h={'30px'}
@@ -369,8 +369,8 @@ const ChatInput = ({
                 }}
                 style={{ borderRadius: '8px' }} // 为父容器添加边框
               >
-                <MyIcon name={'common/onlineSearch'} w={'18px'} mr={'3px'} color={'myGray.600'} />
-                <span>联网搜索</span>
+                <MyIcon name={'common/deepReflect'} w={'18px'} mr={'3px'} color={'myGray.600'} />
+                <span>深度思考</span>
               </Flex>
             </MyTooltip>
           </Flex>
