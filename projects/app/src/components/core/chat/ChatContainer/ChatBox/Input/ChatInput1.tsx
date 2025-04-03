@@ -18,6 +18,7 @@ import FilePreview from '../../components/FilePreview';
 import { useFileUpload } from '../hooks/useFileUpload';
 import ComplianceTip from '@/components/common/ComplianceTip/index';
 import { useToast } from '@fastgpt/web/hooks/useToast';
+import { useState } from 'react';
 
 const InputGuideBox = dynamic(() => import('./InputGuideBox'));
 
@@ -83,7 +84,13 @@ const ChatInput = ({
   });
   const havInput = !!inputValue || fileList.length > 0;
   const canSendMessage = havInput && !hasFileUploading;
+  const [isActive, setIsActive] = useState(false);
 
+  const [customVar1, setCustomVar1] = useState(1);
+  // 处理点击事件，切换值
+  const handleToggleVariable = () => {
+    setCustomVar1((prev) => (prev === 1 ? 2 : 1));
+  };
   // Upload files
   useRequest2(uploadFiles, {
     manual: false,
@@ -161,6 +168,7 @@ const ChatInput = ({
       renderAudioGraph(analyser, canvasRef.current);
       window.requestAnimationFrame(renderCurve);
     };
+
     renderCurve();
   }, [renderAudioGraph, stream]);
 
@@ -189,122 +197,185 @@ const ChatInput = ({
   const RenderTextarea = useMemo(
     () => (
       <Flex alignItems={'flex-end'} mt={fileList.length > 0 ? 1 : 0} pl={[2, 4]}>
-        {/* file selector */}
-        {(showSelectFile || showSelectImg) && (
-          <Flex
-            h={'22px'}
-            alignItems={'center'}
-            justifyContent={'center'}
-            cursor={'pointer'}
-            transform={'translateY(1px)'}
-            onClick={() => {
-              if (isSpeaking) return;
-              onOpenSelectFile();
+        <Flex
+          direction={'column'}
+          gap={0}
+          width={'100%'}
+          alignItems={'left'}
+          justifyContent={'left'}
+        >
+          {/* input area */}
+          <Textarea
+            ref={TextareaDom}
+            py={0}
+            pl={2}
+            mb={10}
+            // ml={-6}
+            bg={'#F9F9F9'}
+            _focusVisible={{
+              border: 'none'
             }}
-          >
-            <MyTooltip label={selectFileLabel}>
-              <MyIcon name={selectFileIcon as any} w={'18px'} color={'myGray.600'} />
-            </MyTooltip>
-            <File onSelect={(files) => onSelectFile({ files })} />
-          </Flex>
-        )}
-
-        {/* input area */}
-        <Textarea
-          ref={TextareaDom}
-          py={0}
-          pl={2}
-          mb={10}
-          ml={-6}
-          bg={'#F9F9F9'}
-          _focusVisible={{
-            border: 'none'
-          }}
-          _focus={{
-            bg: '#F9F9F9', // 聚焦时背景色
-            border: 'none', // 移除默认聚焦边框
-            boxShadow: 'none' // 移除聚焦阴影
-          }}
-          _hover={{
-            bg: '#F9F9F9' // 鼠标悬停时背景色
-          }}
-          _disabled={{
-            bg: '#F9F9F9', // 禁用时背景色
-            opacity: 1 // 防止禁用时变灰
-          }}
-          pr={['30px', '48px']}
-          border={'none'}
-          placeholder={
-            isSpeaking
-              ? t('common:core.chat.Speaking')
-              : isPc
-                ? t('common:core.chat.Type a message')
-                : t('chat:input_placeholder_phone')
-          }
-          resize={'none'}
-          rows={1}
-          height={'22px'}
-          lineHeight={'22px'}
-          maxHeight={'40vh'}
-          maxLength={-1}
-          overflowY={'auto'}
-          whiteSpace={'pre-wrap'}
-          wordBreak={'break-all'}
-          boxShadow={'none !important'}
-          color={'myGray.900'}
-          isDisabled={isSpeaking}
-          value={inputValue}
-          fontSize={['md', 'sm']}
-          onChange={(e) => {
-            const textarea = e.target;
-            textarea.style.height = textareaMinH;
-            textarea.style.height = `${textarea.scrollHeight}px`;
-            setValue('input', textarea.value);
-          }}
-          onKeyDown={(e) => {
-            // enter send.(pc or iframe && enter and unPress shift)
-            const isEnter = e.keyCode === 13;
-            if (isEnter && TextareaDom.current && (e.ctrlKey || e.altKey)) {
-              // Add a new line
-              const index = TextareaDom.current.selectionStart;
-              const val = TextareaDom.current.value;
-              TextareaDom.current.value = `${val.slice(0, index)}\n${val.slice(index)}`;
-              TextareaDom.current.selectionStart = index + 1;
-              TextareaDom.current.selectionEnd = index + 1;
-
-              TextareaDom.current.style.height = textareaMinH;
-              TextareaDom.current.style.height = `${TextareaDom.current.scrollHeight}px`;
-
-              return;
+            _focus={{
+              bg: '#F9F9F9', // 聚焦时背景色
+              border: 'none', // 移除默认聚焦边框
+              boxShadow: 'none' // 移除聚焦阴影
+            }}
+            _hover={{
+              bg: '#F9F9F9' // 鼠标悬停时背景色
+            }}
+            _disabled={{
+              bg: '#F9F9F9', // 禁用时背景色
+              opacity: 1 // 防止禁用时变灰
+            }}
+            pr={['30px', '48px']}
+            border={'none'}
+            placeholder={
+              isSpeaking
+                ? t('common:core.chat.Speaking')
+                : isPc
+                  ? t('common:core.chat.Type a message')
+                  : t('chat:input_placeholder_phone')
             }
+            resize={'none'}
+            rows={1}
+            height={'22px'}
+            lineHeight={'22px'}
+            maxHeight={'40vh'}
+            maxLength={-1}
+            overflowY={'auto'}
+            whiteSpace={'pre-wrap'}
+            wordBreak={'break-all'}
+            boxShadow={'none !important'}
+            color={'myGray.900'}
+            isDisabled={isSpeaking}
+            value={inputValue}
+            fontSize={['md', 'sm']}
+            onChange={(e) => {
+              const textarea = e.target;
+              textarea.style.height = textareaMinH;
+              textarea.style.height = `${textarea.scrollHeight}px`;
+              setValue('input', textarea.value);
+            }}
+            onKeyDown={(e) => {
+              // enter send.(pc or iframe && enter and unPress shift)
+              const isEnter = e.keyCode === 13;
+              if (isEnter && TextareaDom.current && (e.ctrlKey || e.altKey)) {
+                // Add a new line
+                const index = TextareaDom.current.selectionStart;
+                const val = TextareaDom.current.value;
+                TextareaDom.current.value = `${val.slice(0, index)}\n${val.slice(index)}`;
+                TextareaDom.current.selectionStart = index + 1;
+                TextareaDom.current.selectionEnd = index + 1;
 
-            // 全选内容
-            // @ts-ignore
-            e.key === 'a' && e.ctrlKey && e.target?.select();
+                TextareaDom.current.style.height = textareaMinH;
+                TextareaDom.current.style.height = `${TextareaDom.current.scrollHeight}px`;
 
-            if ((isPc || window !== parent) && e.keyCode === 13 && !e.shiftKey) {
-              handleSend();
-              e.preventDefault();
-            }
-          }}
-          onPaste={(e) => {
-            const clipboardData = e.clipboardData;
-            if (clipboardData && (showSelectFile || showSelectImg)) {
-              const items = clipboardData.items;
-              const files = Array.from(items)
-                .map((item) => (item.kind === 'file' ? item.getAsFile() : undefined))
-                .filter((file) => {
-                  return file && fileTypeFilter(file);
-                }) as File[];
-              onSelectFile({ files });
-
-              if (files.length > 0) {
-                e.preventDefault();
-                e.stopPropagation();
+                return;
               }
-            }
-          }}
-        />
+
+              // 全选内容
+              // @ts-ignore
+              e.key === 'a' && e.ctrlKey && e.target?.select();
+
+              if ((isPc || window !== parent) && e.keyCode === 13 && !e.shiftKey) {
+                handleSend();
+                e.preventDefault();
+              }
+            }}
+            onPaste={(e) => {
+              const clipboardData = e.clipboardData;
+              if (clipboardData && (showSelectFile || showSelectImg)) {
+                const items = clipboardData.items;
+                const files = Array.from(items)
+                  .map((item) => (item.kind === 'file' ? item.getAsFile() : undefined))
+                  .filter((file) => {
+                    return file && fileTypeFilter(file);
+                  }) as File[];
+                onSelectFile({ files });
+
+                if (files.length > 0) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              }
+            }}
+          />
+
+          <Flex
+            direction={'row'}
+            gap={3}
+            width={'100%'}
+            alignItems={'center'}
+            justifyContent={'left'}
+          >
+            {/* file selector */}
+            {(showSelectFile || showSelectImg) && (
+              <Flex
+                h={'25px'}
+                cursor={'pointer'}
+                onClick={() => {
+                  if (isSpeaking) return;
+                  onOpenSelectFile();
+                }}
+                transform={'translateY(3px)'}
+              >
+                <MyTooltip label={selectFileLabel}>
+                  <MyIcon name={selectFileIcon as any} w={'18px'} color={'myGray.600'} />
+                </MyTooltip>
+                <File onSelect={(files) => onSelectFile({ files })} />
+              </Flex>
+            )}
+
+            {/* Add search button */}
+            <MyTooltip label="联网搜索">
+              <Flex
+                p={'5px'}
+                h={'30px'}
+                fontSize="14px"
+                direction={'row'}
+                alignItems={'center'}
+                cursor={'pointer'}
+                justifyContent={'center'}
+                onClick={() => {
+                  setIsActive(!isActive);
+                  handleToggleVariable();
+
+                  let currentValue = document.cookie.replace(
+                    /(?:(?:^|.*;\s*)userPreference\s*\=\s*([^;]*).*$)|^.*$/,
+                    '$1'
+                  );
+                  let newValue = currentValue === '1' ? '2' : '1'; // 如果当前值是 1，设置为 2，否则设置为 1
+
+                  // 设置新的 cookie 值
+                  document.cookie = `userPreference=${newValue}; path=/; max-age=3600`;
+                  console.log(`Cookie value set to ${newValue}`);
+
+                  console.log('');
+                }}
+                sx={{
+                  overflow: 'hidden',
+                  border: '0.5px solid #ccc', // 使用0.5px实现超细边框
+                  // 默认样式
+                  ...(!isActive && {
+                    color: 'myGray.600',
+                    bg: 'transparent'
+                  }),
+                  // 激活样式（保持和hover一致）
+                  ...(isActive && {
+                    bg: 'rgba(0, 0, 0, 0.13)',
+                    color: 'black',
+                    borderWidth: '0.5px'
+                  })
+                }}
+                style={{ borderRadius: '8px' }} // 为父容器添加边框
+              >
+                <MyIcon name={'common/onlineSearch'} w={'18px'} mr={'3px'} color={'myGray.600'} />
+                <span>联网搜索</span>
+              </Flex>
+            </MyTooltip>
+          </Flex>
+        </Flex>
+
         <Flex alignItems={'center'} position={'absolute'} right={[2, 4]} bottom={['10px', '12px']}>
           {/* voice-input */}
           {whisperConfig?.open && !inputValue && !isChatting && (

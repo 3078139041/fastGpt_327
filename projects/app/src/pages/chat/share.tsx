@@ -39,7 +39,7 @@ import { useI18nLng } from '@fastgpt/web/hooks/useI18n';
 import { AppSchema } from '@fastgpt/global/core/app/type';
 import { log } from 'console';
 import { Spinner, Text } from '@chakra-ui/react';
-
+import { Button } from '@chakra-ui/react';
 const CustomPluginRunBox = dynamic(() => import('@/pageComponents/chat/CustomPluginRunBox'));
 
 type Props = {
@@ -97,10 +97,44 @@ const OutLink = (props: Props) => {
     console.log('authToken:', authToken);
 
     if (!authToken) {
-      window.location.href = 'http://121.37.224.213:12590/login'; // 为空时跳转
+      // window.location.href = 'http://121.37.224.213:12590/login'; // 为空时跳转
       // window.location.href = 'http://192.168.1.6:80/login'; // 为空时跳转
+      window.location.href = 'https://alex.csic.cn/login'; // 为空时跳转
     }
   };
+
+  const [customVar1, setCustomVar1] = useState(1);
+  // 处理点击事件，切换值
+  const handleToggleVariable = () => {
+    setCustomVar1((prev) => (prev === 1 ? 2 : 1));
+  };
+
+  // 用来获取cookie中的userPreference的值
+  const getUserPreferenceFromCookie = () => {
+    const match = document.cookie.match(new RegExp('(^| )userPreference=([^;]+)'));
+    return match ? match[2] : null;
+  };
+
+  // 用useEffect监听cookie变化
+  useEffect(() => {
+    // 初始化customVar1的值
+    const userPreference = getUserPreferenceFromCookie();
+    if (userPreference) {
+      setCustomVar1(parseInt(userPreference, 10));
+    }
+
+    // 定时器，检查cookie是否变化
+    const intervalId = setInterval(() => {
+      const newUserPreference = getUserPreferenceFromCookie();
+      if (newUserPreference && parseInt(newUserPreference, 10) !== customVar1) {
+        setCustomVar1(parseInt(newUserPreference, 10)); // 更新 customVar1
+      }
+    }, 1000); // 每秒钟检查一次
+
+    return () => {
+      clearInterval(intervalId); // 清除定时器
+    };
+  }, [customVar1]); // 依赖 customVar1，当 customVar1 改变时重新运行 useEffect
 
   useEffect(() => {
     // 先执行一次
@@ -222,7 +256,8 @@ const OutLink = (props: Props) => {
           messages: histories,
           variables: {
             ...variables,
-            ...customVariables
+            ...customVariables,
+            customVariable1: customVar1 // 添加自定义变量到请求体
           },
           responseChatItemId,
           chatId: completionChatId,
@@ -337,6 +372,11 @@ const OutLink = (props: Props) => {
                 showHistory={showHistory === '1'}
               />
             ) : null}
+
+            {/* <Button onClick={handleToggleVariable} colorScheme="blue" size="sm" ml={4}>
+                当前值: {customVar1}
+            </Button> */}
+
             {/* chat box */}
             <Box flex={1} bg={'white'}>
               {isPlugin ? (

@@ -10,6 +10,8 @@ import { ChatContext } from '@/web/core/chat/context/chatContext';
 import { ChatItemContext } from '@/web/core/chat/context/chatItemContext';
 import { useRouter } from 'next/router';
 
+import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
+
 // 安全获取 Cookie
 const getCookie = (name: string): string => {
   if (typeof document === 'undefined') return ''; // 服务器端渲染时返回空字符串
@@ -31,6 +33,8 @@ const ToolMenu = ({ history }: { history: ChatItemType[] }) => {
   }, []);
 
   const onChangeChatId = useContextSelector(ChatContext, (v) => v.onChangeChatId);
+  // 从上下文中获取必要的方法和数据
+  const onClearHistory = useContextSelector(ChatContext, (v) => v.onClearHistories);
   const chatData = useContextSelector(ChatItemContext, (v) => v.chatBoxData);
   const showRouteToAppDetail = useContextSelector(ChatItemContext, (v) => v.showRouteToAppDetail);
 
@@ -39,64 +43,84 @@ const ToolMenu = ({ history }: { history: ChatItemType[] }) => {
     localStorage.clear();
     sessionStorage.clear();
     // 跳转到指定 IP 地址
-    window.location.replace('http://121.37.224.213:12590');
+    // window.location.replace('http://121.37.224.213:12590');
     // window.location.replace('http://192.168.1.6:80');
+    window.location.replace('https://alex.csic.cn/login');
   };
 
+  const { openConfirm, ConfirmModal } = useConfirm({
+    title: '操作确认',
+    content: '确认删除所有聊天记录？' // 修改了确认内容
+  });
+
   return (
-    <MyMenu
-      Button={
-        <IconButton
-          icon={<MyIcon name="more" w="14px" p={2} />}
-          aria-label=""
-          size="sm"
-          boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
-          border={'none'}
-          variant="whitePrimary"
-        />
-      }
-      menuList={[
-        {
-          children: [
-            {
-              icon: 'common/addUser',
-              label: fastgptKey || '未找到 FastGPT Key' // 处理空值情况
-            }
-          ]
-        },
-        {
-          children: [
-            {
-              icon: 'file/markdown',
-              label: `${t('common:Export')}当前对话`,
-              onClick: () => onExportChat({ type: 'md', history })
-            }
-          ]
-        },
-        {
-          children: [
-            {
-              icon: 'support/account/loginoutLight',
-              label: '退出登录',
-              onClick: handleLogout
-            }
-          ]
-        },
-        ...(showRouteToAppDetail
-          ? [
+    <>
+      <MyMenu
+        Button={
+          <IconButton
+            icon={<MyIcon name="more" w="14px" p={2} />}
+            aria-label=""
+            size="sm"
+            boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
+            border={'none'}
+            variant="whitePrimary"
+          />
+        }
+        menuList={[
+          {
+            children: [
               {
-                children: [
-                  {
-                    icon: 'core/app/aiLight',
-                    label: t('app:app_detail'),
-                    onClick: () => router.push(`/app/detail?appId=${chatData.appId}`)
-                  }
-                ]
+                icon: 'common/addUser',
+                label: fastgptKey || '未找到 FastGPT Key'
               }
             ]
-          : [])
-      ]}
-    />
+          },
+          {
+            children: [
+              {
+                icon: 'file/markdown',
+                label: `${t('common:Export')}当前对话`,
+                onClick: () => onExportChat({ type: 'md', history })
+              }
+            ]
+          },
+          {
+            children: [
+              {
+                icon: 'delete',
+                label: '清除历史对话',
+                onClick: openConfirm(() => {
+                  onClearHistory();
+                })
+              }
+            ]
+          },
+          {
+            children: [
+              {
+                icon: 'support/account/loginoutLight',
+                label: '退出登录',
+                onClick: handleLogout // 直接传递函数，不需要箭头函数
+              }
+            ]
+          },
+          ...(showRouteToAppDetail
+            ? [
+                {
+                  children: [
+                    {
+                      icon: 'core/app/aiLight',
+                      label: t('app:app_detail'),
+                      onClick: () => router.push(`/app/detail?appId=${chatData.appId}`)
+                    }
+                  ]
+                }
+              ]
+            : [])
+        ]}
+      />
+      <ConfirmModal /> {/* 添加这行以渲染确认弹框 */}
+    </>
   );
 };
 

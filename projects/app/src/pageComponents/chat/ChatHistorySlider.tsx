@@ -120,7 +120,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
       {/* menu */}
       <Flex
         w={'100%'}
-        px={[2, 2]}
+        px={[2, 3]}
         h={'36px'}
         my={5}
         justify={['space-between', '']}
@@ -162,7 +162,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
         </Button>
         {/* Clear */}
         {/* 删除按钮 */}
-        {isPc && histories.length > 0 && (
+        {/* {isPc && histories.length > 0 && (
           <IconButton
             ml={2}
             bg={'white'}
@@ -191,7 +191,7 @@ const ChatHistorySlider = ({ confirmClearText }: { confirmClearText: string }) =
               })()
             }
           />
-        )}
+        )} */}
       </Flex>
 
       <ScrollData flex={'1 0 0'} h={0} px={[2, 3]} overflow={'overlay'}>
