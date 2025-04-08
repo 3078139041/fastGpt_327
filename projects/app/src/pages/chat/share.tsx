@@ -97,8 +97,8 @@ const OutLink = (props: Props) => {
     console.log('authToken:', authToken);
 
     if (!authToken) {
-      // window.location.href = 'http://121.37.224.213:12590/login'; // 为空时跳转
-      window.location.href = 'http://192.168.1.6:80/login'; // 为空时跳转
+      window.location.href = 'http://121.37.224.213:12590/login'; // 为空时跳转
+      // window.location.href = 'http://192.168.1.6:80/login'; // 为空时跳转
       // window.location.href = 'https://alex.csic.cn/login'; // 为空时跳转
     }
   };
@@ -129,7 +129,7 @@ const OutLink = (props: Props) => {
       if (newUserPreference && parseInt(newUserPreference, 10) !== customVar1) {
         setCustomVar1(parseInt(newUserPreference, 10)); // 更新 customVar1
       }
-    }, 1000); // 每秒钟检查一次
+    }, 200); // 每秒钟检查一次
 
     return () => {
       clearInterval(intervalId); // 清除定时器

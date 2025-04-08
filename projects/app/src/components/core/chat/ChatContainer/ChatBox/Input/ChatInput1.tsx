@@ -85,6 +85,14 @@ const ChatInput = ({
   const havInput = !!inputValue || fileList.length > 0;
   const canSendMessage = havInput && !hasFileUploading;
   const [isActive, setIsActive] = useState(false);
+  useEffect(() => {
+    const match = document.cookie.match(/(^| )userPreference=([^;]+)/);
+
+    console.log('useEffect');
+    if (match && match[2] === '2') {
+      setIsActive(true);
+    }
+  }, []);
 
   const [customVar1, setCustomVar1] = useState(1);
   // 处理点击事件，切换值
@@ -348,8 +356,14 @@ const ChatInput = ({
                   let newValue = currentValue === '1' ? '2' : '1'; // 如果当前值是 1，设置为 2，否则设置为 1
 
                   // 设置新的 cookie 值
-                  document.cookie = `userPreference=${newValue}; path=/; max-age=3600`;
-                  console.log(`Cookie value set to ${newValue}`);
+                  if (isActive) {
+                    // 设置新的 cookie 值
+                    document.cookie = `userPreference=1; path=/; max-age=3600`;
+                    console.log(`Cookie value set to 1`);
+                  } else {
+                    document.cookie = `userPreference=2; path=/; max-age=3600`;
+                    console.log(`Cookie value set to 2`);
+                  }
 
                   console.log('');
                 }}
