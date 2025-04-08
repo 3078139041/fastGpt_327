@@ -12,6 +12,7 @@ export const iconPaths = {
   collectionLight: () => import('./icons/collectionLight.svg'),
   collectionSolid: () => import('./icons/collectionSolid.svg'),
   comment: () => import('./icons/comment.svg'),
+  'common/jia': () => import('./icons/common/jia.svg'),
   'common/add2': () => import('./icons/common/add2.svg'),
   'common/onlineSearch': () => import('./icons/onlineSearch.svg'),
   'common/deepReflect': () => import('./icons/deepReflect.svg'),

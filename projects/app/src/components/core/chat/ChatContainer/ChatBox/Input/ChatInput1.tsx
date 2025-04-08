@@ -317,10 +317,11 @@ const ChatInput = ({
                   if (isSpeaking) return;
                   onOpenSelectFile();
                 }}
-                transform={'translateY(3px)'}
+                transform={'translateY(2px)'}
+                mr={'-3px'}
               >
                 <MyTooltip label={selectFileLabel}>
-                  <MyIcon name={selectFileIcon as any} w={'18px'} color={'myGray.600'} />
+                  <MyIcon name={'common/jia'} w={'20px'} color={'myGray.600'} />
                 </MyTooltip>
                 <File onSelect={(files) => onSelectFile({ files })} />
               </Flex>
