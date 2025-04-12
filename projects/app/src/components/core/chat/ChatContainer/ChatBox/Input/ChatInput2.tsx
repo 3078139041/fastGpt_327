@@ -18,7 +18,12 @@ import FilePreview from '../../components/FilePreview';
 import { useFileUpload } from '../hooks/useFileUpload';
 import ComplianceTip from '@/components/common/ComplianceTip/index';
 import { useToast } from '@fastgpt/web/hooks/useToast';
+import { useState } from 'react';
 
+import { useContext } from 'react';
+import { MessageContext } from '@/pages/chat/share';
+
+import { MessageProvider, useMessageContext } from '@/pages/chat/MessageContext';
 const InputGuideBox = dynamic(() => import('./InputGuideBox'));
 
 const fileTypeFilter = (file: File) => {
@@ -83,7 +88,13 @@ const ChatInput = ({
   });
   const havInput = !!inputValue || fileList.length > 0;
   const canSendMessage = havInput && !hasFileUploading;
+  const [isActive, setIsActive] = useState(false);
 
+  const [customVar1, setCustomVar1] = useState(1);
+  // 处理点击事件，切换值
+  const handleToggleVariable = () => {
+    setCustomVar1((prev) => (prev === 1 ? 2 : 1));
+  };
   // Upload files
   useRequest2(uploadFiles, {
     manual: false,
@@ -161,6 +172,7 @@ const ChatInput = ({
       renderAudioGraph(analyser, canvasRef.current);
       window.requestAnimationFrame(renderCurve);
     };
+
     renderCurve();
   }, [renderAudioGraph, stream]);
 
@@ -189,101 +201,184 @@ const ChatInput = ({
   const RenderTextarea = useMemo(
     () => (
       <Flex alignItems={'flex-end'} mt={fileList.length > 0 ? 1 : 0} pl={[2, 4]}>
-        {/* file selector */}
-
-        {/* input area */}
-        <Textarea
-          ref={TextareaDom}
-          py={0}
-          pl={2}
-          pr={['30px', '48px']}
-          border={'none'}
-          _focusVisible={{
-            border: 'none'
-          }}
-          _focus={{
-            bg: '#F5F5F5', // 聚焦时背景色
-            border: 'none', // 移除默认聚焦边框
-            boxShadow: 'none' // 移除聚焦阴影
-          }}
-          _hover={{
-            bg: '#F5F5F5' // 鼠标悬停时背景色
-          }}
-          _disabled={{
-            bg: '#F5F5F5', // 禁用时背景色
-            opacity: 1 // 防止禁用时变灰
-          }}
-          placeholder={
-            isSpeaking
-              ? t('common:core.chat.Speaking')
-              : isPc
-                ? t('common:core.chat.Type a message')
-                : t('chat:input_placeholder_phone')
-          }
-          resize={'none'}
-          rows={1}
-          height={'32px'}
-          lineHeight={'15px'}
-          maxHeight={'50vh'}
-          maxLength={-1}
-          overflowY={'auto'}
-          whiteSpace={'pre-wrap'}
-          wordBreak={'break-all'}
-          boxShadow={'none !important'}
-          color={'myGray.900'}
-          isDisabled={isSpeaking}
-          value={inputValue}
-          fontSize={['md', 'sm']}
-          onChange={(e) => {
-            const textarea = e.target;
-            textarea.style.height = textareaMinH;
-            textarea.style.height = `${textarea.scrollHeight}px`;
-            setValue('input', textarea.value);
-          }}
-          onKeyDown={(e) => {
-            // enter send.(pc or iframe && enter and unPress shift)
-            const isEnter = e.keyCode === 13;
-            if (isEnter && TextareaDom.current && (e.ctrlKey || e.altKey)) {
-              // Add a new line
-              const index = TextareaDom.current.selectionStart;
-              const val = TextareaDom.current.value;
-              TextareaDom.current.value = `${val.slice(0, index)}\n${val.slice(index)}`;
-              TextareaDom.current.selectionStart = index + 1;
-              TextareaDom.current.selectionEnd = index + 1;
-
-              TextareaDom.current.style.height = textareaMinH;
-              TextareaDom.current.style.height = `${TextareaDom.current.scrollHeight}px`;
-
-              return;
+        <Flex
+          direction={'column'}
+          gap={0}
+          width={'100%'}
+          alignItems={'left'}
+          justifyContent={'left'}
+        >
+          {/* input area */}
+          <Textarea
+            ref={TextareaDom}
+            py={0}
+            pl={2}
+            mb={10}
+            // ml={-6}
+            bg={'#F9F9F9'}
+            _focusVisible={{
+              border: 'none'
+            }}
+            _focus={{
+              bg: '#F9F9F9', // 聚焦时背景色
+              border: 'none', // 移除默认聚焦边框
+              boxShadow: 'none' // 移除聚焦阴影
+            }}
+            _hover={{
+              bg: '#F9F9F9' // 鼠标悬停时背景色
+            }}
+            _disabled={{
+              bg: '#F9F9F9', // 禁用时背景色
+              opacity: 1 // 防止禁用时变灰
+            }}
+            pr={['30px', '48px']}
+            border={'none'}
+            placeholder={
+              isSpeaking
+                ? t('common:core.chat.Speaking')
+                : isPc
+                  ? t('common:core.chat.Type a message')
+                  : t('chat:input_placeholder_phone')
             }
+            resize={'none'}
+            rows={1}
+            height={'22px'}
+            lineHeight={'22px'}
+            maxHeight={'40vh'}
+            maxLength={-1}
+            overflowY={'auto'}
+            whiteSpace={'pre-wrap'}
+            wordBreak={'break-all'}
+            boxShadow={'none !important'}
+            color={'myGray.900'}
+            isDisabled={isSpeaking}
+            value={inputValue}
+            fontSize={['md', 'sm']}
+            onChange={(e) => {
+              const textarea = e.target;
+              textarea.style.height = textareaMinH;
+              textarea.style.height = `${textarea.scrollHeight}px`;
+              setValue('input', textarea.value);
+            }}
+            onKeyDown={(e) => {
+              // enter send.(pc or iframe && enter and unPress shift)
+              const isEnter = e.keyCode === 13;
+              if (isEnter && TextareaDom.current && (e.ctrlKey || e.altKey)) {
+                // Add a new line
+                const index = TextareaDom.current.selectionStart;
+                const val = TextareaDom.current.value;
+                TextareaDom.current.value = `${val.slice(0, index)}\n${val.slice(index)}`;
+                TextareaDom.current.selectionStart = index + 1;
+                TextareaDom.current.selectionEnd = index + 1;
 
-            // 全选内容
-            // @ts-ignore
-            e.key === 'a' && e.ctrlKey && e.target?.select();
+                TextareaDom.current.style.height = textareaMinH;
+                TextareaDom.current.style.height = `${TextareaDom.current.scrollHeight}px`;
 
-            if ((isPc || window !== parent) && e.keyCode === 13 && !e.shiftKey) {
-              handleSend();
-              e.preventDefault();
-            }
-          }}
-          onPaste={(e) => {
-            const clipboardData = e.clipboardData;
-            if (clipboardData && (showSelectFile || showSelectImg)) {
-              const items = clipboardData.items;
-              const files = Array.from(items)
-                .map((item) => (item.kind === 'file' ? item.getAsFile() : undefined))
-                .filter((file) => {
-                  return file && fileTypeFilter(file);
-                }) as File[];
-              onSelectFile({ files });
-
-              if (files.length > 0) {
-                e.preventDefault();
-                e.stopPropagation();
+                return;
               }
-            }
-          }}
-        />
+
+              // 全选内容
+              // @ts-ignore
+              e.key === 'a' && e.ctrlKey && e.target?.select();
+
+              if ((isPc || window !== parent) && e.keyCode === 13 && !e.shiftKey) {
+                handleSend();
+                e.preventDefault();
+              }
+            }}
+            onPaste={(e) => {
+              const clipboardData = e.clipboardData;
+              if (clipboardData && (showSelectFile || showSelectImg)) {
+                const items = clipboardData.items;
+                const files = Array.from(items)
+                  .map((item) => (item.kind === 'file' ? item.getAsFile() : undefined))
+                  .filter((file) => {
+                    return file && fileTypeFilter(file);
+                  }) as File[];
+                onSelectFile({ files });
+
+                if (files.length > 0) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              }
+            }}
+          />
+
+          <Flex
+            direction={'row'}
+            gap={3}
+            width={'100%'}
+            alignItems={'center'}
+            justifyContent={'left'}
+          >
+            {/* file selector */}
+            {(showSelectFile || showSelectImg) && (
+              <Flex
+                h={'25px'}
+                cursor={'pointer'}
+                onClick={() => {
+                  if (isSpeaking) return;
+                  onOpenSelectFile();
+                }}
+                transform={'translateY(2px)'}
+              >
+                <MyTooltip label={selectFileLabel}>
+                  <MyIcon name={'common/add3'} w={'20px'} color={'myGray.600'} />
+                </MyTooltip>
+                <File onSelect={(files) => onSelectFile({ files })} />
+              </Flex>
+            )}
+
+            {/* Add search button */}
+            <MyTooltip label="深度思考">
+              <Flex
+                p={'5px'}
+                h={'30px'}
+                fontSize="14px"
+                direction={'row'}
+                alignItems={'center'}
+                cursor={'pointer'}
+                justifyContent={'center'}
+                onClick={() => {
+                  setIsActive(!isActive);
+                  handleToggleVariable();
+
+                  let currentValue = document.cookie.replace(
+                    /(?:(?:^|.*;\s*)userPreference\s*\=\s*([^;]*).*$)|^.*$/,
+                    '$1'
+                  );
+                  let newValue = currentValue === '1' ? '2' : '1'; // 如果当前值是 1，设置为 2，否则设置为 1
+
+                  // 设置新的 cookie 值
+                  document.cookie = `userPreference=${newValue}; path=/; max-age=3600`;
+                  console.log(`Cookie value set to ${newValue}`);
+
+                  send();
+                }}
+                sx={{
+                  overflow: 'hidden',
+                  border: '0.5px solid #ccc', // 使用0.5px实现超细边框
+                  // 默认样式
+                  ...(!isActive && {
+                    color: 'myGray.600',
+                    bg: 'transparent'
+                  }),
+                  // 激活样式（保持和hover一致）
+                  ...(isActive && {
+                    bg: 'rgba(0, 0, 0, 0.13)',
+                    color: 'black',
+                    borderWidth: '0.5px'
+                  })
+                }}
+                style={{ borderRadius: '8px' }} // 为父容器添加边框
+              >
+                <MyIcon name={'common/deep'} w={'18px'} mr={'3px'} color={'myGray.600'} />
+                <span>深度思考</span>
+              </Flex>
+            </MyTooltip>
+          </Flex>
+        </Flex>
 
         <Flex alignItems={'center'} position={'absolute'} right={[2, 4]} bottom={['10px', '12px']}>
           {/* voice-input */}
@@ -305,15 +400,18 @@ const ChatInput = ({
                     alignItems={'center'}
                     justifyContent={'center'}
                     flexShrink={0}
-                    h={['32px']} // 宽高一致
-                    w={['32px']} // 宽高一致
-                    borderRadius={'50%'} // 圆形
+                    h={['26px', '32px']}
+                    w={['26px', '32px']}
+                    borderRadius={'md'}
                     cursor={'pointer'}
-                    bg={'#F5F5F8'} // 背景颜色
-                    _hover={{ bg: '#E5E5E5' }} // 鼠标悬停背景
+                    _hover={{ bg: '#F5F5F8' }}
                     onClick={() => stopSpeak(true)}
                   >
-                    <MyIcon name={'core/chat/cancelSpeak'} width={['20px']} height={['20px']} />
+                    <MyIcon
+                      name={'core/chat/cancelSpeak'}
+                      width={['20px', '22px']}
+                      height={['20px', '22px']}
+                    />
                   </Flex>
                 </MyTooltip>
               )}
@@ -327,18 +425,17 @@ const ChatInput = ({
                   alignItems={'center'}
                   justifyContent={'center'}
                   flexShrink={0}
-                  h={['32px']} // 宽高一致
-                  w={['32px']} // 宽高一致
-                  borderRadius={'50%'} // 圆形
+                  h={['26px', '32px']}
+                  w={['26px', '32px']}
+                  borderRadius={'md'}
                   cursor={'pointer'}
-                  bg={isSpeaking ? '#E5E5E5' : '#F5F5F8'} // 动态背景颜色
-                  _hover={{ bg: '#E5E5E5' }} // 鼠标悬停背景
+                  _hover={{ bg: '#F5F5F8' }}
                   onClick={onWhisperRecord}
                 >
                   <MyIcon
                     name={isSpeaking ? 'core/chat/finishSpeak' : 'core/chat/recordFill'}
-                    width={['20px']}
-                    height={['20px']}
+                    width={['20px', '22px']}
+                    height={['20px', '22px']}
                     color={isSpeaking ? 'primary.500' : 'myGray.600'}
                   />
                 </Flex>
@@ -355,12 +452,10 @@ const ChatInput = ({
               alignItems={'center'}
               justifyContent={'center'}
               flexShrink={0}
-              h={['32px']} // 宽高一致
-              w={['32px']} // 宽高一致
-              borderRadius={'50%'} // 圆形
-              bg={
-                isSpeaking || isChatting ? '' : !havInput || hasFileUploading ? '#E5E5E5' : '#000'
-              }
+              h={['28px', '32px']}
+              w={['28px', '32px']}
+              borderRadius={'50%'}
+              bg={isSpeaking || isChatting ? '' : !havInput || hasFileUploading ? '#000' : '#000'}
               cursor={havInput ? 'pointer' : 'not-allowed'}
               lineHeight={1}
               onClick={() => {
@@ -371,20 +466,20 @@ const ChatInput = ({
               }}
             >
               {isChatting ? (
-                // 发送框加载按钮
                 <MyIcon
-                  width={['22px']}
-                  height={['22px']}
+                  animation={'zoomStopIcon 0.4s infinite alternate'}
+                  width={['22px', '25px']}
+                  height={['22px', '25px']}
                   cursor={'pointer'}
                   name={'stop'}
-                  color={'#000'}
+                  color={'gray.500'}
                 />
               ) : (
                 <MyTooltip label={t('common:core.chat.Send Message')}>
                   <MyIcon
                     name={'core/chat/sendFill'}
-                    width={['20px']}
-                    height={['20px']}
+                    width={['18px', '20px']}
+                    height={['18px', '20px']}
                     color={'white'}
                   />
                 </MyTooltip>
@@ -392,27 +487,6 @@ const ChatInput = ({
             </Flex>
           )}
         </Flex>
-
-        {(showSelectFile || showSelectImg) && (
-          <Flex
-            position={'absolute'}
-            top={['55px']}
-            h={'22px'}
-            alignItems={'center'}
-            justifyContent={'center'}
-            cursor={'pointer'}
-            transform={'translateY(5px) translateX(6px)'}
-            onClick={() => {
-              if (isSpeaking) return;
-              onOpenSelectFile();
-            }}
-          >
-            <MyTooltip label={selectFileLabel}>
-              <MyIcon name={selectFileIcon as any} w={'18px'} color={'myGray.600'} />
-            </MyTooltip>
-            <File onSelect={(files) => onSelectFile({ files })} />
-          </Flex>
-        )}
       </Flex>
     ),
     [
@@ -443,14 +517,26 @@ const ChatInput = ({
     ]
   );
 
+  const { message, setMessage } = useMessageContext();
+
+  console.log(message, setMessage);
+
+  const [flag, setFlag] = useState(1);
+  const send = () => {
+    if (flag == 1) {
+      setMessage('深度思考');
+      setFlag(2);
+    } else {
+      setMessage('不是深度思考');
+      setFlag(1);
+    }
+  };
+
   return (
     <Box
-      m={['0 auto', '10px auto']}
+      m={['0 auto', '20px auto']}
       w={'100%'}
-      // 输入框长度设置
-      maxW={['auto', 'min(93.5%, 100%)']}
-      // 设置底部外边距
-      p={[10, 10]}
+      maxW={['auto', 'min(90%, 100%)']}
       px={[0, 5]}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
@@ -481,18 +567,14 @@ const ChatInput = ({
         pt={fileList.length > 0 ? '0' : ['14px', '18px']}
         pb={['14px', '18px']}
         position={'relative'}
+        bg={'#F9F9F9'}
         // boxShadow={isSpeaking ? `0 0 10px rgba(54,111,255,0.4)` : `0 0 10px rgba(0,0,0,0.2)`}
-        borderRadius={['none', '20px']}
-        // bg={'#000'}
-        // 输入框高度设置
-        h={'105px'}
+        borderRadius={['none', '16px']}
         overflow={'display'}
         {...(isPc
           ? {
-              // border: '1px solid',
-              // borderColor: 'rgba(0,0,0,0.12)'
-              // borderColor: 'F7F8FC'
-              backgroundColor: '#F5F5F5'
+              border: '1px solid',
+              borderColor: 'rgba(0,0,0,0.12)'
             }
           : {
               borderTop: '1px solid',

@@ -19,7 +19,12 @@ import { useFileUpload } from '../hooks/useFileUpload';
 import ComplianceTip from '@/components/common/ComplianceTip/index';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import { useState } from 'react';
+import { Select } from '@chakra-ui/react';
 
+import { useContext } from 'react';
+import { MessageContext } from '@/pages/chat/share';
+
+import { MessageProvider, useMessageContext } from '@/pages/chat/MessageContext';
 const InputGuideBox = dynamic(() => import('./InputGuideBox'));
 
 const fileTypeFilter = (file: File) => {
@@ -84,13 +89,73 @@ const ChatInput = ({
   });
   const havInput = !!inputValue || fileList.length > 0;
   const canSendMessage = havInput && !hasFileUploading;
-  const [isActive, setIsActive] = useState(false);
+  // 深度思考 背景是否显示
+  const [isActive, setIsActive] = useState(true);
+
+  // 选择知识库初始值
+  const [repository, setRepository] = useState([
+    {
+      _id: '111111',
+      name: '知识库0'
+    }
+  ]);
+
+  const { message, setMessage } = useMessageContext();
+
+  // 知识库下拉框选择的值
+  const [selectedValue, setSelectedValue] = useState('111111');
+  useEffect(() => {
+    async function fetchgetUser() {
+      try {
+        const match = document.cookie.match(new RegExp('(^| )FastgptKey=([^;]+)'));
+        const authToken = match ? match[2] : null;
+        console.log('authToken:', authToken);
+        console.log('username:12', authToken);
+
+        const res = await fetch(`/api/user/getuser?username=${authToken}`);
+        const data = await res.json();
+
+        console.log('username:11', data.data._id);
+
+        const res1 = await fetch(`/api/team/getteam?userId=` + data.data._id);
+        const data1 = await res1.json();
+        console.log('data1', data1.data.teamId);
+
+        const res2 = await fetch(`/api/getdatasets/getdatasets?teamId=` + data1.data.teamId);
+        const data2 = await res2.json();
+        console.log('data2', data2.data);
+
+        setRepository(data2.data);
+      } catch (error) {
+        console.error('获取用户 OutLink 失败:', error);
+      } finally {
+        // 不管成功或失败都要把 loadingUid 置为 false
+        //  setLoadingUid(false);
+      }
+    }
+
+    fetchgetUser();
+  }, []);
 
   const [customVar1, setCustomVar1] = useState(1);
   // 处理点击事件，切换值
   const handleToggleVariable = () => {
     setCustomVar1((prev) => (prev === 1 ? 2 : 1));
   };
+
+  // 初始值为0 ，默认非深度思考
+  const [flag, setFlag] = useState(0);
+  useEffect(() => {
+    send(); // flag 变化后自动触发
+  }, [flag, selectedValue]);
+
+  const send = () => {
+    setMessage({
+      deep: flag,
+      selectedValue
+    });
+  };
+
   // Upload files
   useRequest2(uploadFiles, {
     manual: false,
@@ -211,20 +276,20 @@ const ChatInput = ({
             pl={2}
             mb={10}
             // ml={-6}
-            bg={'#F9F9F9'}
+            bg={'#fff'}
             _focusVisible={{
               border: 'none'
             }}
             _focus={{
-              bg: '#F9F9F9', // 聚焦时背景色
+              bg: '#fff', // 聚焦时背景色
               border: 'none', // 移除默认聚焦边框
               boxShadow: 'none' // 移除聚焦阴影
             }}
             _hover={{
-              bg: '#F9F9F9' // 鼠标悬停时背景色
+              bg: '#fff' // 鼠标悬停时背景色
             }}
             _disabled={{
-              bg: '#F9F9F9', // 禁用时背景色
+              bg: '#fff', // 禁用时背景色
               opacity: 1 // 防止禁用时变灰
             }}
             pr={['30px', '48px']}
@@ -303,7 +368,7 @@ const ChatInput = ({
 
           <Flex
             direction={'row'}
-            gap={3}
+            gap={2}
             width={'100%'}
             alignItems={'center'}
             justifyContent={'left'}
@@ -317,62 +382,120 @@ const ChatInput = ({
                   if (isSpeaking) return;
                   onOpenSelectFile();
                 }}
-                transform={'translateY(3px)'}
+                // transform={'translateY(-2px)'}
               >
                 <MyTooltip label={selectFileLabel}>
-                  <MyIcon name={selectFileIcon as any} w={'18px'} color={'myGray.600'} />
+                  <MyIcon
+                    transform="translateY(-2.5px)"
+                    name={'common/add3'}
+                    w={'13px'}
+                    p={'8px'}
+                    border="1px solid #E9E9E9"
+                    borderRadius={'50%'}
+                    color={'#B3B3B3'}
+                  />
                 </MyTooltip>
                 <File onSelect={(files) => onSelectFile({ files })} />
               </Flex>
             )}
+            <Flex gap="8px">
+              {' '}
+              {/* 添加间隔，避免元素紧贴 */}
+              {/* 深度思考按钮 - 保持原有功能，样式与Select统一 */}
+              <MyTooltip label="深度思考">
+                <Flex
+                  p="4px"
+                  h="35px"
+                  w="90px" // 宽度与Select一致
+                  fontSize="12px"
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="center"
+                  cursor="pointer"
+                  borderRadius="10px" // 圆角与Select一致
+                  border={`1px solid ${isActive ? '#E9E9E9' : '#DAEEFF'}`}
+                  bg={isActive ? '#fff' : '#DAEEFF'}
+                  color={isActive ? '#5E5E5E' : '#0285FF'}
+                  onClick={() => {
+                    setIsActive(!isActive);
+                    handleToggleVariable();
+                    setFlag(flag == 0 ? 1 : 0);
+                  }}
+                  _hover={{
+                    bg: 'rgba(0, 0, 0, 0.04)' // 悬停效果增强一致性
+                  }}
+                >
+                  <MyIcon
+                    name="common/deep"
+                    w="18px"
+                    mr="3px"
+                    color={isActive ? '#5E5E5E' : '#0285FF'}
+                  />
+                  <span>深度思考</span>
+                </Flex>
+              </MyTooltip>
+              {/* 知识库Select - 移除默认阴影，样式与按钮统一 */}
+              <MyTooltip label="知识库">
+                <Select
+                  placeholder="请选择知识库"
+                  icon={
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="12px" // 调整为更小的尺寸（原16px）
+                      height="12px"
+                      fill="none"
+                    >
+                      <path
+                        stroke="#ccc"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M7 10l5 5 5-5" // 微调路径使小尺寸下更协调
+                      />
+                    </svg>
+                  }
+                  // defaultValue={repository[0].name}
+                  w="130px"
+                  h="35px"
+                  style={{ textAlign: 'center' }}
+                  fontSize="12px"
+                  borderRadius="10px" // 显式设置圆角
+                  border="1px solid #E9E9E9"
+                  transform="translateY(0.5px)"
+                  sx={{
+                    boxShadow: 'none !important', // 强制移除阴影
+                    _focus: {
+                      borderColor: '#E9E9E9', // 聚焦时保持边框颜色一致
+                      boxShadow: 'none'
+                    }
+                  }}
+                  _hover={{
+                    bg: 'rgba(0, 0, 0, 0.04)' // 悬停效果增强一致性
+                  }}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      // 正常值
+                      setSelectedValue(e.target.value);
+                    } else {
+                      // 默认值
+                      setSelectedValue('111111');
+                    }
+                  }}
+                >
+                  {/* <option value="option1">Option 1</option>
+                  <option value="option2">Option 2</option>
+                  <option value="option3">Option 3</option> */}
 
-            {/* Add search button */}
-            <MyTooltip label="联网搜索">
-              <Flex
-                p={'5px'}
-                h={'30px'}
-                fontSize="14px"
-                direction={'row'}
-                alignItems={'center'}
-                cursor={'pointer'}
-                justifyContent={'center'}
-                onClick={() => {
-                  setIsActive(!isActive);
-                  handleToggleVariable();
-
-                  let currentValue = document.cookie.replace(
-                    /(?:(?:^|.*;\s*)userPreference\s*\=\s*([^;]*).*$)|^.*$/,
-                    '$1'
-                  );
-                  let newValue = currentValue === '1' ? '2' : '1'; // 如果当前值是 1，设置为 2，否则设置为 1
-
-                  // 设置新的 cookie 值
-                  document.cookie = `userPreference=${newValue}; path=/; max-age=3600`;
-                  console.log(`Cookie value set to ${newValue}`);
-
-                  console.log('');
-                }}
-                sx={{
-                  overflow: 'hidden',
-                  border: '0.5px solid #ccc', // 使用0.5px实现超细边框
-                  // 默认样式
-                  ...(!isActive && {
-                    color: 'myGray.600',
-                    bg: 'transparent'
-                  }),
-                  // 激活样式（保持和hover一致）
-                  ...(isActive && {
-                    bg: 'rgba(0, 0, 0, 0.13)',
-                    color: 'black',
-                    borderWidth: '0.5px'
-                  })
-                }}
-                style={{ borderRadius: '8px' }} // 为父容器添加边框
-              >
-                <MyIcon name={'common/onlineSearch'} w={'18px'} mr={'3px'} color={'myGray.600'} />
-                <span>联网搜索</span>
-              </Flex>
-            </MyTooltip>
+                  {repository.map((item) => {
+                    return (
+                      <option key={item._id} value={item._id}>
+                        {item.name}
+                      </option>
+                    );
+                  })}
+                </Select>
+              </MyTooltip>
+            </Flex>
           </Flex>
         </Flex>
 
@@ -547,11 +670,18 @@ const ChatInput = ({
       <Box
         pt={fileList.length > 0 ? '0' : ['14px', '18px']}
         pb={['14px', '18px']}
-        position={'relative'}
-        bg={'#F9F9F9'}
-        // boxShadow={isSpeaking ? `0 0 10px rgba(54,111,255,0.4)` : `0 0 10px rgba(0,0,0,0.2)`}
+        position="relative"
+        bg="#fff"
+        shadow="0 4px 12px -6px rgba(0, 0, 0, 0.12)"
+        sx={{
+          transition: 'box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // 更流畅的贝塞尔曲线
+          '&:hover': {
+            shadow: '0 8px 24px -10px rgba(0, 0, 0, 0.18)' // 增强版阴影参数
+            // boxShadow: '0 8px 24px -10px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0,0,0,0.1) inset' // 添加内阴影增强立体感
+          }
+        }}
         borderRadius={['none', '16px']}
-        overflow={'display'}
+        overflow="visible" // 修正overflow属性值
         {...(isPc
           ? {
               border: '1px solid',

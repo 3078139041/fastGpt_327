@@ -11,6 +11,7 @@ import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useTranslation } from 'next-i18next';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
+import { useState, useEffect } from 'react';
 
 export enum NavbarTypeEnum {
   normal = 'normal',
@@ -41,9 +42,26 @@ const Navbar = ({ unread }: { unread: number }) => {
   const { userInfo } = useUserStore();
   const { gitStar, feConfigs } = useSystemStore();
   const { lastChatAppId } = useChatStore();
+  // 管理员登录ture：显示左侧完整导航栏
+  // 非管理员登录 false：除了知识库其他的都隐藏
+  const [menuControl, setMenuControl] = useState(false);
+  useEffect(() => {
+    // 若 Cookie 是 "FastgptKey=abc123; otherKey=xxx"，则匹配 "FastgptKey=abc123"，并捕获 "abc123"
+    const match = document.cookie.match(new RegExp('(^| )is_admin=([^;]+)'));
+    // match[2] 是正则中第二个捕获组 ([^;]+) 的值（即 FastgptKey 对应的值
 
-  const navbarList = useMemo(
-    () => [
+    console.log(match, '3333');
+    if (match && match[2] && match[2] == '11') {
+      setMenuControl(true);
+    } else {
+      setMenuControl(false);
+    }
+
+    console.log(navbarList);
+  }, []);
+
+  const navbarList = useMemo(() => {
+    const fullNavbarList = [
       // {
       //   label: t('common:navbar.Chat'),
       //   icon: 'core/chat/chatLight',
@@ -58,6 +76,7 @@ const Navbar = ({ unread }: { unread: number }) => {
         link: `/app/list`,
         activeLink: ['/app/list', '/app/detail']
       },
+      // 导航栏
       {
         label: t('common:navbar.Datasets'),
         icon: 'core/dataset/datasetLight',
@@ -90,9 +109,19 @@ const Navbar = ({ unread }: { unread: number }) => {
           '/account/model'
         ]
       }
-    ],
-    [lastChatAppId, t]
-  );
+    ];
+    // 管理员：返回完整菜单
+    if (menuControl) {
+      return fullNavbarList;
+    }
+    // 非管理员：只保留 "知识库" (Datasets)
+    else {
+      return fullNavbarList.filter(
+        (item) =>
+          item.label === t('common:navbar.Datasets') || item.label === t('common:navbar.Studio')
+      );
+    }
+  }, [lastChatAppId, t, menuControl]);
 
   const isSecondNavbarPage = useMemo(() => {
     return ['/toolkit'].includes(router.pathname);

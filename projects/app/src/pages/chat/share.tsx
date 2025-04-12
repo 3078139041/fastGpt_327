@@ -40,7 +40,11 @@ import { AppSchema } from '@fastgpt/global/core/app/type';
 import { log } from 'console';
 import { Spinner, Text } from '@chakra-ui/react';
 import { Button } from '@chakra-ui/react';
+import { createContext } from 'react';
+import { MessageProvider, useMessageContext } from './MessageContext';
 const CustomPluginRunBox = dynamic(() => import('@/pageComponents/chat/CustomPluginRunBox'));
+// 定义一个上下文
+export const MessageContext = createContext({});
 
 type Props = {
   appId: string;
@@ -97,45 +101,19 @@ const OutLink = (props: Props) => {
     console.log('authToken:', authToken);
 
     if (!authToken) {
-      // window.location.href = 'http://121.37.224.213:12590/login'; // 为空时跳转
+      window.location.href = 'http://121.37.224.213:13090/login'; // 为空时跳转
       // window.location.href = 'http://192.168.1.6:80/login'; // 为空时跳转
-      window.location.href = 'https://alex.csic.cn/login'; // 为空时跳转
+      // window.location.href = 'https://alex.csic.cn/login'; // 为空时跳转
     }
   };
 
-  const [customVar1, setCustomVar1] = useState(1);
+  const [customVar1, setCustomVar1] = useState({ deep: 0, selectedValue: '111111' });
   // 处理点击事件，切换值
-  const handleToggleVariable = () => {
-    setCustomVar1((prev) => (prev === 1 ? 2 : 1));
-  };
+  // const handleToggleVariable = () => {
+  //   setCustomVar1((prev) => (prev === 1 ? 2 : 1));
+  // };
 
-  // 用来获取cookie中的userPreference的值
-  const getUserPreferenceFromCookie = () => {
-    const match = document.cookie.match(new RegExp('(^| )userPreference=([^;]+)'));
-    return match ? match[2] : null;
-  };
-
-  // 用useEffect监听cookie变化
-  useEffect(() => {
-    // 初始化customVar1的值
-    const userPreference = getUserPreferenceFromCookie();
-    if (userPreference) {
-      setCustomVar1(parseInt(userPreference, 10));
-    }
-
-    // 定时器，检查cookie是否变化
-    const intervalId = setInterval(() => {
-      const newUserPreference = getUserPreferenceFromCookie();
-      if (newUserPreference && parseInt(newUserPreference, 10) !== customVar1) {
-        setCustomVar1(parseInt(newUserPreference, 10)); // 更新 customVar1
-      }
-    }, 1000); // 每秒钟检查一次
-
-    return () => {
-      clearInterval(intervalId); // 清除定时器
-    };
-  }, [customVar1]); // 依赖 customVar1，当 customVar1 改变时重新运行 useEffect
-
+  // 跳转登录的一个东西
   useEffect(() => {
     // 先执行一次
     checkAuthToken();
@@ -147,22 +125,9 @@ const OutLink = (props: Props) => {
     return () => clearInterval(intervalId);
   }, []);
 
-  // useEffect(() => {
-  //   async function fetchUserOutLink() {
-  //     try {
-  //       const res = await fetch(`/api/histories/list?userid=1`);
-  //       const data = await res.json();
-  //       fixedCustomUid=data.data.outlinksid
-
-  //       console.log(data.data.outlinksid)
-  //       // setUserOutLinkData(data.data);
-  //     } catch (error) {
-  //       console.error('获取用户 OutLink 失败:', error);
-  //     }
-  //   }
-  //   fetchUserOutLink();
-  // }, []);
   const [fixedCustomUid, setFixedCustomUid] = useState<string | null>(null);
+  const [message, setMessage] = useState(1);
+
   useEffect(() => {
     async function fetchUserOutLink() {
       try {
@@ -178,12 +143,6 @@ const OutLink = (props: Props) => {
         console.error('获取用户 OutLink 失败:', error);
       }
     }
-
-    // const res = await getInitOutLinkChatInfo({
-    //   chatId,
-    //   shareId,
-    //   outLinkUid
-    // });
 
     fetchUserOutLink();
   }, []);
@@ -237,6 +196,15 @@ const OutLink = (props: Props) => {
       variables,
       responseChatItemId
     }: StartChatFnProps) => {
+      // 获取最新message
+      // const { message } = useMessageContext(); // 直接添加
+      // console.log('message', message);
+      // if (message == '深度思考') {
+      //   setCustomVar1(2);
+      // } else {
+      //   setCustomVar1(1);
+      // }
+
       const completionChatId = chatId || getNanoid();
       const histories = messages.slice(-1);
 
@@ -257,7 +225,8 @@ const OutLink = (props: Props) => {
           variables: {
             ...variables,
             ...customVariables,
-            customVariable1: customVar1 // 添加自定义变量到请求体
+            customVariable1: customVar1.deep, // 添加自定义变量到请求体
+            datasets: customVar1.selectedValue || 111111
           },
           responseChatItemId,
           chatId: completionChatId,
@@ -339,8 +308,27 @@ const OutLink = (props: Props) => {
     );
   }, [isOpenSlider, isPc, onCloseSlider, showHistory, t]);
 
+  function UserComponent() {
+    // 获取context值
+    const { message, setMessage } = useMessageContext();
+
+    setCustomVar1(message as any);
+
+    console.log('1111111', customVar1);
+
+    return (
+      <div>
+        <p>当前深度: {message.deep}</p>
+        <p>选择的值: {message.selectedValue}</p>
+      </div>
+    );
+  }
+
   return (
-    <>
+    <MessageProvider>
+      <div style={{ display: 'none' }}>
+        <UserComponent />
+      </div>
       <NextHead
         title={props.appName || data?.app?.name || 'AI'}
         desc={props.appIntro || data?.app?.intro}
@@ -378,7 +366,17 @@ const OutLink = (props: Props) => {
             </Button> */}
 
             {/* chat box */}
-            <Box flex={1} bg={'white'}>
+            <Box
+              flex={1}
+              bg={'#fff'}
+              shadow="0 4px 12px -6px rgba(0, 0, 0, 0.12)"
+              sx={{
+                '&:hover': {
+                  shadow: '0 6px 18px -8px rgba(0, 0, 0, 0.15)'
+                }
+              }}
+              transition="box-shadow 0.2s ease-in-out"
+            >
               {isPlugin ? (
                 <CustomPluginRunBox
                   appId={appId}
@@ -402,7 +400,7 @@ const OutLink = (props: Props) => {
           </Flex>
         </Flex>
       </PageContainer>
-    </>
+    </MessageProvider>
   );
 };
 
